@@ -9,7 +9,10 @@ void Pipe::input() {
     getline(cin, name);
     
     length = getValidInput<float>("Укажите длину (км): ", [](float x) { return x > 0; });
-    diameter = getValidInput<int>("Укажите диаметр (мм): ", [](int x) { return x > 0; });
+    
+    // Ограничение диаметров
+    diameter = getValidInput<int>("Укажите диаметр (500, 700, 1000, 1400 мм): ", 
+        [](int x) { return x == 500 || x == 700 || x == 1000 || x == 1400; });
     
     repair = false;
 }
