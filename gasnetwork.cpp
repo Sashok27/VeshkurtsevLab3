@@ -2,11 +2,12 @@
 #include <iostream>
 #include <stack>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
 void GasNetwork::addConnection(int pipe_id, int cs_in_id, int cs_out_id) {
-    connections.push_back({pipe_id, cs_in_id, cs_out_id});
+    connections.push_back(Connection(pipe_id, cs_in_id, cs_out_id));
 }
 
 void GasNetwork::displayConnections(const map<int, Pipe>& pipes, const map<int, CompressorStation>& stations) const {
@@ -17,8 +18,15 @@ void GasNetwork::displayConnections(const map<int, Pipe>& pipes, const map<int, 
     
     cout << "Соединения в газотранспортной сети:" << endl;
     for (const auto& conn : connections) {
-        cout << "Труба ID " << conn.pipe_id << " (диаметр " << pipes.at(conn.pipe_id).getDiameter() 
-             << " мм) соединяет КС ID " << conn.cs_in_id << " -> КС ID " << conn.cs_out_id << endl;
+        auto pipe_it = pipes.find(conn.pipe_id);
+        auto cs_in_it = stations.find(conn.cs_in_id);
+        auto cs_out_it = stations.find(conn.cs_out_id);
+        
+        if (pipe_it != pipes.end() && cs_in_it != stations.end() && cs_out_it != stations.end()) {
+            cout << "Труба ID " << conn.pipe_id << " (диаметр " << pipe_it->second.getDiameter() 
+                 << " мм) соединяет КС ID " << conn.cs_in_id << " \"" << cs_in_it->second.getName()
+                 << "\" -> КС ID " << conn.cs_out_id << " \"" << cs_out_it->second.getName() << "\"" << endl;
+        }
     }
 }
 
@@ -147,4 +155,27 @@ vector<int> GasNetwork::topologicalSort(const map<int, CompressorStation>& stati
     }
     
     return result;
+}
+
+// Сохранение соединений в файл
+void GasNetwork::saveToFile(ostream& out) const {
+    out << "CONNECTIONS " << connections.size() << endl;
+    for (const auto& conn : connections) {
+        out << conn.pipe_id << " " << conn.cs_in_id << " " << conn.cs_out_id << endl;
+    }
+}
+
+// Загрузка соединений из файла
+void GasNetwork::loadFromFile(istream& in) {
+    connections.clear();
+    
+    string marker;
+    int count;
+    in >> marker >> count;
+    
+    for (int i = 0; i < count; i++) {
+        int pipe_id, cs_in_id, cs_out_id;
+        in >> pipe_id >> cs_in_id >> cs_out_id;
+        connections.push_back(Connection(pipe_id, cs_in_id, cs_out_id));
+    }
 }

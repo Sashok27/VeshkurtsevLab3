@@ -6,11 +6,15 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <algorithm> // Добавляем для std::remove_if
 
 struct Connection {
     int pipe_id;
     int cs_in_id;   // ID станции входа
     int cs_out_id;  // ID станции выхода
+    
+    // Конструктор для удобства
+    Connection(int pipe, int in, int out) : pipe_id(pipe), cs_in_id(in), cs_out_id(out) {}
 };
 
 class GasNetwork {
@@ -26,6 +30,11 @@ public:
     std::vector<int> topologicalSort(const std::map<int, CompressorStation>& stations) const;
     void removeConnectionsWithPipe(int pipe_id);
     void removeConnectionsWithCS(int cs_id);
+    
+    // Методы для сохранения и загрузки
+    void saveToFile(std::ostream& out) const;
+    void loadFromFile(std::istream& in);
+    const std::vector<Connection>& getConnections() const { return connections; }
     
 private:
     bool dfs(int v, std::set<int>& visited, std::set<int>& recursionStack, 
